@@ -1,22 +1,15 @@
-/* Copyright (C) 2007 Jeffrey Scudder
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 var q12={};q12.gid=function(targetId){return document.getElementById(targetId);};q12.c=function(tag){return document.createElement(tag);};q12.t=function(text){return document.createTextNode(text);};q12.j=function(list){return list.join('');};q12.d=function(domElement){domElement.parentNode.removeChild(domElement);}
 q12.setText=function(domElement,textString){domElement.innerHTML=q12.toHtml(domElement);};q12.setHtml=function(domElement,htmlString){domElement.innerHTML=htmlString;};q12.url=function(base,params){parameters=[];for(key in params){parameters.push(escape(key)+'='+escape(params[key]));}
 return[base,parameters.join('&')].join('?');};q12.httpRequest=function(httpVerb,data,url,headers,handler){var http=null;if(window.XMLHttpRequest){http=new XMLHttpRequest();}else if(window.ActiveXObject){http=new ActiveXObject('Microsoft.XMLHTTP');}
 if(http){http.onreadystatechange=function(){if(http.readyState==4){handler(http);}};var propery=null;for(property in headers){http.setRequestHeader();}
-http.open(httpVerb,url,true);http.send(data);}else{throw new Error('Unable to create the HTTP request object.');}};q12.get=function(url,headers,handler){q12.httpRequest('GET',null,url,headers,handler);};q12.post=function(data,url,headers,handler){q12.httpRequest('POST',data,url,headers,handler);};q12.b64KeyStr='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvw'+'xyz0123456789+/=';q12.to64=function(input){var output="";var chr1,chr2,chr3;var enc1,enc2,enc3,enc4;var i=0;do{chr1=input.charCodeAt(i++);chr2=input.charCodeAt(i++);chr3=input.charCodeAt(i++);enc1=chr1>>2;enc2=((chr1&3)<<4)|(chr2>>4);enc3=((chr2&15)<<2)|(chr3>>6);enc4=chr3&63;if(isNaN(chr2)){enc3=enc4=64;}else if(isNaN(chr3)){enc4=64;}
+http.open(httpVerb,url,true);http.send(data);}else{throw new Error('Unable to create the HTTP request object.');}};q12.get=function(url,headers,handler){q12.httpRequest('GET',null,url,headers,handler);};q12.post=function(data,url,headers,handler){q12.httpRequest('POST',data,url,headers,handler);};q12.setCookie=function(name,value,days,path){var expires=''
+if(days){var date=new Date();date.setTime(date.getTime()+(days*24*60*60*1000));expires='; expires='+date.toGMTString();}
+document.cookie=[name,'=',value,expires,'; path=',path].join('');}
+q12.getCookie=function(name){var nameEQ=name+'=';var ca=document.cookie.split(';');for(var i=0;i<ca.length;i++){var c=ca[i];while(c.charAt(0)==' '){c=c.substring(1,c.length);}
+if(c.indexOf(nameEQ)==0){return c.substring(nameEQ.length,c.length);}}
+return null;}
+q12.b64KeyStr='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvw'+'xyz0123456789+/=';q12.to64=function(input){var output="";var chr1,chr2,chr3;var enc1,enc2,enc3,enc4;var i=0;do{chr1=input.charCodeAt(i++);chr2=input.charCodeAt(i++);chr3=input.charCodeAt(i++);enc1=chr1>>2;enc2=((chr1&3)<<4)|(chr2>>4);enc3=((chr2&15)<<2)|(chr3>>6);enc4=chr3&63;if(isNaN(chr2)){enc3=enc4=64;}else if(isNaN(chr3)){enc4=64;}
 output=[output,q12.b64KeyStr.charAt(enc1),q12.b64KeyStr.charAt(enc2),q12.b64KeyStr.charAt(enc3),q12.b64KeyStr.charAt(enc4)].join('');}while(i<input.length);return output;};q12.from64=function(input){var output="";var chr1,chr2,chr3;var enc1,enc2,enc3,enc4;var i=0;input=input.replace(/[^A-Za-z0-9\+\/\=]/g,"");do{enc1=q12.b64KeyStr.indexOf(input.charAt(i++));enc2=q12.b64KeyStr.indexOf(input.charAt(i++));enc3=q12.b64KeyStr.indexOf(input.charAt(i++));enc4=q12.b64KeyStr.indexOf(input.charAt(i++));chr1=(enc1<<2)|(enc2>>4);chr2=((enc2&15)<<4)|(enc3>>2);chr3=((enc3&3)<<6)|enc4;output=output+String.fromCharCode(chr1);if(enc3!=64){output=output+String.fromCharCode(chr2);}
 if(enc4!=64){output=output+String.fromCharCode(chr3);}}while(i<input.length);return output;};q12.toHtml=function(input){return input.replace(/&/g,'&amp;').replace(/  /g,'&nbsp;&nbsp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br/>');};q12.fromHtml=function(input){return input.replace(/<br\/>/g,'\n').replace(/&quot;/g,'"').replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&nbsp;&nbsp;/g,'  ').replace(/&amp;/g,'&');};q12.toUrl=function(input){return escape(input);};q12.fromUrl=function(input){return unescape(input);};q12.cipher=function(input,w){var Nb=4;var Nr=w.length/Nb-1;var state=[[],[],[],[]];for(var i=0;i<4*Nb;i++)state[i%4][Math.floor(i/4)]=input[i];state=q12.addRoundKey(state,w,0,Nb);for(var round=1;round<Nr;round++){state=q12.subBytes(state,Nb);state=q12.shiftRows(state,Nb);state=q12.mixColumns(state,Nb);state=q12.addRoundKey(state,w,round,Nb);}
 state=q12.subBytes(state,Nb);state=q12.shiftRows(state,Nb);state=q12.addRoundKey(state,w,Nr,Nb);var output=new Array(4*Nb);for(var i=0;i<4*Nb;i++)output[i]=state[i%4][Math.floor(i/4)];return output;};q12.subBytes=function(s,Nb){for(var r=0;r<4;r++){for(var c=0;c<Nb;c++)s[r][c]=q12.sbox[s[r][c]];}
