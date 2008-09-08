@@ -13,6 +13,7 @@
       function runAllTests() {
         runDomTests();
         runHttpTests();
+        runCookieTests();
         runDataTests();
         runClassTests();
         renderMessages();
@@ -28,6 +29,10 @@
         //testGet();
         //testPost();
         testCreateUrl();
+      };
+
+      function runCookieTests() {
+        testSetAndGetCookie();
       };
       
       function runDataTests() {
@@ -116,6 +121,17 @@
             'evil=':'te%20s t'}) ==
             '/url/base?foo=bar&evil%3D=te%2520s%20t', messages, 
             'testCreateUrl: Complex URL should match expected');
+      };
+
+      function testSetAndGetCookie() {
+        q12.assert(q12.getCookie('foo') == null, messages, 
+            'testSetAndGetCookie: cookie\'s initial value should be null');
+        q12.setCookie('foo', 'bar', 1, '/');
+        q12.assert(q12.getCookie('foo') == 'bar', messages,
+            'testSetAndGetCookie: cookie\'s should have been set');
+        q12.setCookie('foo', null, -1, '/');
+        q12.assert(q12.getCookie('foo') == null, messages,
+            'testSetAndGetCookie: cookie\'s ending value should be null');
       };
       
       function testToAndFromBase64() {

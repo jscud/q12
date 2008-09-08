@@ -1,4 +1,4 @@
-/* Copyright (C) 2007 Jeffrey Scudder
+/* Copyright (C) 2007-2008 Jeffrey William Scudder
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,6 +165,31 @@ q12.post = function(data, url, headers, handler) {
 
 // TODO: add put and delete functions.
 
+q12.setCookie = function(name, value, days, path) {
+  var expires = ''
+  if (days) {
+    var date = new Date();
+    date.setTime(date.getTime() + (days*24*60*60*1000));
+    expires = '; expires=' + date.toGMTString();
+  }
+  document.cookie = [name, '=', value, expires, '; path=', path].join(''); 
+}
+
+q12.getCookie = function(name) {
+  var nameEQ = name + '=';
+  var ca = document.cookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1, c.length);
+    }
+    if (c.indexOf(nameEQ) == 0) {
+      return c.substring(nameEQ.length, c.length);
+    }
+  }
+  return null;
+}
+
 // Base 64 conversion code was written by Tyler Akins and has been placed 
 // in the public domain.  It would be nice if you left this header intact.
 // Base64 code from Tyler Akins -- http://rumkin.com
@@ -286,7 +311,8 @@ q12.fromUrl = function(input) {
   return unescape(input);
 };
 
-// AES code © 2005–2007 Chris Veness under LGPL from http://www.movable-type.co.uk/scripts/aes.html.
+// AES code copyright 2005-2007 Chris Veness under LGPL from 
+// http://www.movable-type.co.uk/scripts/aes.html.
 /**
  * AES Cipher function: encrypt 'input' with Rijndael algorithm
  *
