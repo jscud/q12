@@ -40,6 +40,7 @@
         testToAndFromHtml();
         testToAndFromUrl();
         testToAndFromAes();
+        testToAndFromArc4();
       };
       
       function runClassTests() {
@@ -185,6 +186,15 @@
             'testToAndFromAes: Decrypted text should match plaintext');
       };
       
+      function testToAndFromArc4() {
+        var plaintext = 'Secrets secrets are no fun.';
+        var key = 'Secrets secrets hurt someone.';
+        var ciphertext = q12.arc4(plaintext, key);
+        var deciphered = q12.arc4(ciphertext, key);
+        q12.assert(deciphered == plaintext, messages,
+            'testToAndFromArc4: Twice encrypted text should match plaintext');
+      };
+      
       function testMethodCreation() {
         MethodTestClass = q12.Class(function(name) {this.name = name;});
         var jeff = new MethodTestClass('Jeff');
@@ -245,4 +255,4 @@
     <div id="test"></div>
     <div id="display"></div>
   </body>
-<html>
+</html>
