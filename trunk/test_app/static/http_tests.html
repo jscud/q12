@@ -1,0 +1,122 @@
+<html>
+  <head>
+    <title>HTTP Tests for the q12 library</title>
+    <script src="/static/q12.js"></script>
+    <script>
+      var messages = [];
+      
+      function renderMessages() {
+        var display = q12.gid('display');
+        display.innerHTML = messages.join('');
+      }
+    
+      function runAllTests() {
+        runHttpTests();
+        runCookieTests();
+        renderMessages();
+      };
+       
+      function runHttpTests() {
+        testGet();
+        testPost();
+        testPut();
+        testDel();
+        testCreateUrl();
+      };
+
+      function runCookieTests() {
+        testSetAndGetCookie();
+      };
+      
+      function testGet() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == 'This is a test.', messages,
+              'testGet: Get on echo gave unexpected result');
+          q12.assert(http.status == 200, messages,
+              'testGet: status was not 200');
+          q12.assert(http.statusText == 'OK', messages,
+              'testGet: status text was not "OK"');
+          q12.assert(http.getResponseHeader('foo') == 'bar', messages,
+              'testGet: Response did not contain the echoed header "foo"');
+          renderMessages();
+        };
+        
+        q12.get('/echo', {'foo':'bar'}, checkResponse);
+      };
+      
+      function testPost() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == 'my data', messages,
+              'testPost: Post on echo gave unexpected result');
+          q12.assert(http.status == 201, messages,
+              'testPost: status was not 201');
+          q12.assert(http.statusText == 'CREATED', messages,
+              'testPost: status text was not "CREATED"');
+          q12.assert(http.getResponseHeader('baz') == 'ok', messages,
+              'testPost: Response did not contain the echoed header "baz"');
+          renderMessages();
+        };
+        q12.post('my data', '/echo', {'baz':'ok'}, checkResponse);
+      };
+      
+      function testPut() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == 'my data2', messages,
+              'testPut: Put on echo gave unexpected result');
+          q12.assert(http.status == 200, messages,
+              'testPut: status was not 200');
+          q12.assert(http.statusText == 'UPDATED', messages,
+              'testPut: status text was not "UPDATED"');
+          q12.assert(http.getResponseHeader('xyz') == 'abc', messages,
+              'testPut: Response did not contain the echoed header "xyz"');
+          renderMessages();
+        };
+        q12.put('my data2', '/echo', {'xyz':'abc'}, checkResponse);
+      };
+      
+      function testDel() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == '', messages,
+              'testDelete: Delete on echo gave unexpected result');
+          q12.assert(http.status == 200, messages,
+              'testDelete: status was not 200');
+          q12.assert(http.statusText == 'DELETED', messages,
+              'testDelete: status text was not "DELETED"');
+          q12.assert(http.getResponseHeader('j') == 's', messages,
+              'testDelete: Response did not contain the echoed header "j"');
+          renderMessages();
+        };
+        q12.del('/echo', {'j':'s'}, checkResponse);
+      };
+      
+      function testCreateUrl() {
+        q12.assert(q12.url('/url/base', {'foo':'bar'}) ==
+            '/url/base?foo=bar', messages, 
+            'testCreateUrl: Simple URL should match expected');
+        q12.assert(q12.url('/url/base', {'foo':'bar',
+            'evil=':'te%20s t'}) ==
+            '/url/base?foo=bar&evil%3D=te%2520s%20t', messages, 
+            'testCreateUrl: Complex URL should match expected');
+      };
+
+      function testSetAndGetCookie() {
+        q12.assert(q12.getCookie('foo') == null, messages, 
+            'testSetAndGetCookie: cookie\'s initial value should be null');
+        q12.setCookie('foo', 'bar', 1, '/');
+        q12.assert(q12.getCookie('foo') == 'bar', messages,
+            'testSetAndGetCookie: cookie\'s should have been set');
+        q12.setCookie('foo', null, -1, '/');
+        q12.assert(q12.getCookie('foo') == null, messages,
+            'testSetAndGetCookie: cookie\'s ending value should be null');
+      };
+      
+    </script>
+  </head>
+  <body>
+    <div>
+      <a onclick="runAllTests();">Click here to run the tests</a>
+    </div>
+    <div id="test"></div>
+    <div id="display"></div>
+  </body>
+</html>
