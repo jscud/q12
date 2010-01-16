@@ -102,7 +102,7 @@ q12.setHtml = function(domElement, htmlString) {
  *     key values pairs as URL parameters.
  */ 
 q12.url = function(base, params) {
-  parameters = [];
+  var parameters = [];
   for (key in params) {
     parameters.push(escape(key) + '=' + escape(params[key]));
   }
