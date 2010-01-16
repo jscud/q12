@@ -1,0 +1,300 @@
+<html>
+  <head>
+    <title>Tests for the q12 library</title>
+    <script src="/static/q12.js"></script>
+    <script>
+      var messages = [];
+      
+      function renderMessages() {
+        var display = q12.gid('display');
+        display.innerHTML = messages.join('');
+      }
+    
+      function runAllTests() {
+        runDomTests();
+        runHttpTests();
+        runCookieTests();
+        runDataTests();
+        runClassTests();
+        renderMessages();
+      };
+
+      // Test groupings.
+      function runDomTests() {
+        testGid();
+        testCreateAndDelete();
+        testJoin();
+      };
+
+      function runHttpTests() {
+        testGet();
+        testPost();
+        testPut();
+        testDel();
+        testCreateUrl();
+      };
+
+      function runCookieTests() {
+        testSetAndGetCookie();
+      };
+
+      function runDataTests() {
+        testToAndFromBase64();
+        testToAndFromHtml();
+        testToAndFromUrl();
+        testToAndFromAes();
+        testToAndFromArc4();
+      };
+      
+      function runClassTests() {
+        testMethodCreation();
+        testCreateNewClass();
+        testInheritFromClasses();
+      };
+
+
+      // DOM Tests
+      function testGid() {
+        var element = q12.gid('test');
+        q12.assert(element !== null, messages, 
+            'testGid: Element should be a DOM Element');
+      };
+      
+      function testCreateAndDelete() {
+        var newElement = q12.c('div');
+        newElement['id'] = 'testCreateDiv';
+        newElement.appendChild(q12.t('test text'));
+        var element = q12.gid('test');
+        element.appendChild(newElement);
+        
+        var foundElement = q12.gid('testCreateDiv');
+        q12.assert(foundElement, messages, 
+            'testCreate: test element should be found');
+        q12.assert(foundElement.innerHTML == 'test text', messages,
+            'testCreate: test element should contain text');
+        
+        q12.setHtml(newElement, '<div id="testCreateDiv2">x</div>');
+        var innerElement = q12.gid('testCreateDiv2');
+        q12.assert(innerElement, messages, 
+            'testCreate: inner element should be found');
+        q12.assert(innerElement.innerHTML == 'x', messages,
+            'testCreate: inner element should contain text');
+        
+        q12.d(foundElement);
+        var foundElement = q12.gid('testCreateDiv');
+        q12.assert(!foundElement, messages,
+            'testCreate: test element should no longer exist');
+      };
+      
+      function testJoin() {
+        var text = q12.j(['ab', 'cd']);
+        q12.assert(text == 'abcd', messages,
+            'testJoin: join should append two strings');
+      };
+      
+      // HTTP Tests
+      function testGet() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == 'This is a test.', messages,
+              'testGet: Get on echo gave unexpected result');
+          q12.assert(http.status == 200, messages,
+              'testGet: status was not 200');
+          q12.assert(http.statusText == 'OK', messages,
+              'testGet: status text was not "OK"');
+          q12.assert(http.getResponseHeader('foo') == 'bar', messages,
+              'testGet: Response did not contain the echoed header "foo"');
+          renderMessages();
+        };
+        
+        q12.get('/echo', {'foo':'bar'}, checkResponse);
+      };
+      
+      function testPost() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == 'my data', messages,
+              'testPost: Post on echo gave unexpected result');
+          q12.assert(http.status == 201, messages,
+              'testPost: status was not 201');
+          q12.assert(http.statusText == 'CREATED', messages,
+              'testPost: status text was not "CREATED"');
+          q12.assert(http.getResponseHeader('baz') == 'ok', messages,
+              'testPost: Response did not contain the echoed header "baz"');
+          renderMessages();
+        };
+        q12.post('my data', '/echo', {'baz':'ok'}, checkResponse);
+      };
+      
+      function testPut() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == 'my data2', messages,
+              'testPut: Put on echo gave unexpected result');
+          q12.assert(http.status == 200, messages,
+              'testPut: status was not 200');
+          q12.assert(http.statusText == 'UPDATED', messages,
+              'testPut: status text was not "UPDATED"');
+          q12.assert(http.getResponseHeader('xyz') == 'abc', messages,
+              'testPut: Response did not contain the echoed header "xyz"');
+          renderMessages();
+        };
+        q12.put('my data2', '/echo', {'xyz':'abc'}, checkResponse);
+      };
+      
+      function testDel() {
+        function checkResponse(http) {
+          q12.assert(http.responseText == '', messages,
+              'testDelete: Delete on echo gave unexpected result');
+          q12.assert(http.status == 200, messages,
+              'testDelete: status was not 200');
+          q12.assert(http.statusText == 'DELETED', messages,
+              'testDelete: status text was not "DELETED"');
+          q12.assert(http.getResponseHeader('j') == 's', messages,
+              'testDelete: Response did not contain the echoed header "j"');
+          renderMessages();
+        };
+        q12.del('/echo', {'j':'s'}, checkResponse);
+      };
+      
+      function testCreateUrl() {
+        q12.assert(q12.url('/url/base', {'foo':'bar'}) ==
+            '/url/base?foo=bar', messages, 
+            'testCreateUrl: Simple URL should match expected');
+        q12.assert(q12.url('/url/base', {'foo':'bar',
+            'evil=':'te%20s t'}) ==
+            '/url/base?foo=bar&evil%3D=te%2520s%20t', messages, 
+            'testCreateUrl: Complex URL should match expected');
+      };
+
+      // Cookie Tests
+      function testSetAndGetCookie() {
+        q12.assert(q12.getCookie('foo') == null, messages, 
+            'testSetAndGetCookie: cookie\'s initial value should be null');
+        q12.setCookie('foo', 'bar', 1, '/');
+        q12.assert(q12.getCookie('foo') == 'bar', messages,
+            'testSetAndGetCookie: cookie\'s should have been set');
+        q12.setCookie('foo', null, -1, '/');
+        q12.assert(q12.getCookie('foo') == null, messages,
+            'testSetAndGetCookie: cookie\'s ending value should be null');
+      };
+      
+      // Data Tests
+      function testToAndFromBase64() {
+        // Test data string comes from Thomas Hobbes's Leviathan
+        var testData = 'Man is distinguished, not only by his reason, but' + 
+            ' by this singular passion from other animals, which is a' + 
+            ' lust of the mind, that by a perseverance of delight in the' + 
+            ' continued and indefatigable generation of knowledge,' + 
+            ' exceeds the short vehemence of any carnal pleasure.';
+        var testData64 = 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGh' + 
+            'pcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSB' + 
+            'vdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHR' +
+            'oYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGl' + 
+            'udWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGd' + 
+            'lLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCB' +
+            'wbGVhc3VyZS4=';     
+        q12.assert(q12.to64(testData) == testData64, messages, 
+            'testToAndFromBase64: String converted to base 64 did not' + 
+                ' match expected value');
+        q12.assert(q12.from64(testData64) == testData, messages, 
+            'testToAndFromBase64: Conversion from base 64 did not match');
+      }
+      
+      function testToAndFromHtml() {
+        var testData = '  &test&amp;<&lt;>   \n\n"';
+        var htmlData = '&nbsp;&nbsp;&amp;test&amp;amp;&lt;&amp;lt;&gt;' +
+                       '&nbsp;&nbsp; <br/><br/>&quot;';
+        q12.assert(q12.toHtml(testData) == htmlData, messages,
+            'testToAndFromHtml: Escaped HTML should match html data');
+        q12.assert(q12.fromHtml(htmlData) == testData, messages,
+            'testToAndFromHtml: Unescaped HTML should match original data');
+      }
+      
+      function testToAndFromUrl() {
+        var testData = ' [test]|data \n\t%20;?&?';
+        var urlData = '%20%5Btest%5D%7Cdata%20%0A%09%2520%3B%3F%26%3F';
+        
+        q12.assert(q12.toUrl(testData) == urlData, messages,
+            'testToAndFromUrl: toUrl result should match URL encoded data');
+        q12.assert(q12.fromUrl(urlData) == testData, messages,
+            'testToAndFromUrl: fromUrl data should match original data');
+      };
+      
+      function testToAndFromAes() {
+        var plaintext = 'It is a secret!';
+        var key = 'The key is also secret';
+        var ciphertext = q12.toAes(plaintext, key);
+        var decipheredtext = q12.fromAes(ciphertext, key);
+        
+        q12.assert(decipheredtext == plaintext, messages,
+            'testToAndFromAes: Decrypted text should match plaintext');
+      };
+      
+      function testToAndFromArc4() {
+        var plaintext = 'Secrets secrets are no fun.';
+        var key = 'Secrets secrets hurt someone.';
+        var ciphertext = q12.arc4(plaintext, key);
+        var deciphered = q12.arc4(ciphertext, key);
+        q12.assert(deciphered == plaintext, messages,
+            'testToAndFromArc4: Twice encrypted text should match plaintext');
+      };
+      
+      // Class Tests
+      function testMethodCreation() {
+        MethodTestClass = q12.Class(function(name) {this.name = name;});
+        var jeff = new MethodTestClass('Jeff');
+        MethodTestClass.method('test', function() {return this.name;});
+        q12.assert(jeff.test() == 'Jeff', messages,
+            'testMethodCreation: Instance should have the new method');
+      };
+      
+      function testCreateNewClass() {
+        MyClass = q12.Class(function(x) {this.value = x;});
+        var x = new MyClass(5);
+        q12.assert(x.value == 5, messages,
+            'testCreateNewClass: New class constructor should set value');
+        q12.assert(x.method == undefined, messages,
+            'testCreateNewClass: Instance should not have a method member');
+        q12.assert(MyClass.method != undefined, messages,
+            'testCreateNewClass: Class should have a method member');
+      };
+      
+      function testInheritFromClasses() {
+        C1 = q12.Class(function() {});
+        C1.method('test', function() {return 1;});
+        C2 = q12.Class(function() {});
+        C2.method('foo', function() {return 'bar';});
+        C3 = q12.Class(function() {});
+        C3.method('test', function() {return 3;});
+        
+        // Test inheriting using the Class function.
+        ClassInheritor = q12.Class(function(){}, C1, C2, C3);
+        var x = new ClassInheritor();
+        q12.assert(x.test() == 1, messages,
+            'testInheritFromClasses: Class should have inherited method' + 
+            ' from first class');
+        q12.assert(x.foo() == 'bar', messages,
+            'testInheritFromClasses: Class should also have inherited from' +
+            ' second class');
+            
+        // Test inheriting using the inherits method.
+        MethodInheritor = q12.Class(function(){});
+        var x = new MethodInheritor();
+        q12.assert(x['test'] == undefined, messages,
+            'testInheritFromClasses: New class should lack methods');
+        MethodInheritor.inherits(C3, C2, C1);
+        q12.assert(x.test() == 3, messages,
+            'testInheritFromClasses: Class should inherit method' + 
+            ' from third class');
+        q12.assert(x.foo() == 'bar', messages,
+            'testInheritFromClasses: Class should inherit from' +
+            ' second class');
+      };
+    </script>
+  </head>
+  <body>
+    <div>
+      <a onclick="runAllTests();">Click here to run the tests</a>
+    </div>
+    <div id="test"></div>
+    <div id="display"></div>
+  </body>
+</html>
