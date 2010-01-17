@@ -24,6 +24,7 @@
         testGid();
         testCreateAndDelete();
         testJoin();
+        testBuildTree();
       };
 
       function runHttpTests() {
@@ -90,6 +91,51 @@
         var text = q12.j(['ab', 'cd']);
         q12.assert(text == 'abcd', messages,
             'testJoin: join should append two strings');
+      };
+
+      function testBuildTree() {
+        q12.gid('test').appendChild(q12.tree([
+          'div',
+          {'id': 'childOne',
+           style: {width: '5px',
+                   color: 'red'}},
+          'first > text',
+          ['a',
+           {href: '/static/http_tests.html',
+            'id': 'testLink'},
+           'HTTP Tests page'],
+          'second']));
+        var testDiv = q12.gid('childOne');
+        q12.assert(testDiv, messages,
+            'testBuildTree: outer test element should exist');
+        q12.assert(testDiv.style.width == '5px', messages,
+            'testBuildTree: testDiv width should be 5px');
+        q12.assert(testDiv.style.color == 'red', messages,
+            'testBuildTree: testDiv color should be red');
+        q12.assert(testDiv.firstChild.textContent == 'first > text',
+            messages,
+            'testBuildTree: firstChild should contain "first > text"');
+        q12.assert(testDiv.childNodes[1], messages,
+            'testBuildTree: testDiv should have a second child"');
+        q12.assert(testDiv.childNodes[1].attributes[0].name == 'href',
+            messages,
+            'testBuildTree: second child should have href attribute"');
+        q12.assert(testDiv.childNodes[1].attributes[0].value == 
+                '/static/http_tests.html',
+            messages,
+            'testBuildTree: second child had unexpected href value"');
+        q12.assert(testDiv.childNodes[1].firstChild,
+            messages,
+            'testBuildTree: second child should have a child node"');
+        q12.assert(testDiv.childNodes[1].firstChild.textContent == 
+                'HTTP Tests page',
+            messages,
+            'testBuildTree: second child text should be "HTTP Tests page"');
+        q12.assert(testDiv.childNodes[2].textContent == 'second',
+            messages,
+            'testBuildTree: third child should contain "second"');
+        // Delete the testDiv node that we added.
+        q12.d(testDiv);
       };
       
       // HTTP Tests
