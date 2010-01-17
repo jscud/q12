@@ -92,6 +92,54 @@ q12.setHtml = function(domElement, htmlString) {
 };
 
 /**
+ * Creates a DOM tree from a simple list.
+ * The structure of the tree passed in is as follows:
+ * ['elementTag', 
+ *  {attribute1: value,
+ *   attribute2: value,
+ *   style: {property1: value,
+ *           property2: value}},
+ *  'child text node',
+ *  ['elementTag',
+ *   {property: value},
+ *   'grandchild text node'],
+ *  'third node']
+ * The above will result in a DOM node which has three child nodes, the
+ * first and third will be text nodes because the values were strings.
+ * The second child node will be a DOM node as well.
+ *
+ * @param {Array} t The tree's structure as a collection of strings, lists,
+ *     and simple objects. The structure is as follows
+ *     ['elementTag', {attributes}, child, child, child, ...]
+ * @return {DOM Element} Returns a new DOM element.
+ */
+q12.tree = function(t) {
+  // Create the node using the tag which is first in the list.
+  var domNode = document.createElement(t[0]);
+  // Add all HTML attributes to the node.
+  for (var key in t[1]) {
+    // The style attributes get special treatment.
+    if (key == 'style') {
+      for (var styleAttribute in t[1].style) {
+        domNode.style[styleAttribute] = t[1].style[styleAttribute];
+      }
+    } else {
+      domNode[key] = t[1][key];
+    }
+  }
+  // Iterate over all child nodes, converting them to either text or HTML nodes.
+  for (var index = 2, child; child = t[index]; index++) {
+    if (typeof(child) == 'string') {
+      domNode.appendChild(document.createTextNode(child));
+    } else {
+      // Buid recursively.
+      domNode.appendChild(q12['tree'](child));
+    }
+  }
+  return domNode; 
+}
+
+/**
  * Forms a URL string from the components.
  *
  * @param {String} base The beginning of the URL.
