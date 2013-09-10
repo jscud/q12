@@ -129,7 +129,7 @@
             'testSetAndGetCookie: cookie\'s initial value should be null');
         q12.setCookie('foo', 'bar', 1, '/');
         q12.assert(q12.getCookie('foo') == 'bar', messages,
-            'testSetAndGetCookie: cookie\'s should have been set');
+            'testSetAndGetCookie: cookie\'s value should have been set');
         q12.setCookie('foo', null, -1, '/');
         q12.assert(q12.getCookie('foo') == null, messages,
             'testSetAndGetCookie: cookie\'s ending value should be null');
