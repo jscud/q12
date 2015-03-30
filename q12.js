@@ -152,7 +152,7 @@ q12.tree = function(t) {
 q12.url = function(base, params) {
   var parameters = [];
   for (key in params) {
-    parameters.push(escape(key) + '=' + escape(params[key]));
+    parameters.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
   }
   return [base, parameters.join('&')].join('?');
 };
@@ -358,11 +358,11 @@ q12.fromHtml = function(input) {
 };
 
 q12.toUrl = function(input) {
-  return escape(input);
+  return encodeURIComponent(input);
 };
 
 q12.fromUrl = function(input) {
-  return unescape(input);
+  return decodeURIComponent(input);
 };
 
 // AES code copyright 2005-2007 Chris Veness under LGPL from 
@@ -379,13 +379,13 @@ q12.fromUrl = function(input) {
  *   returns byte-array encrypted value (16 bytes)
  */
 q12.cipher = function(input, w) { 
-  // main Cipher function [ง5.1]
+  // main Cipher function [ยง5.1]
   // block size (in words): no of columns in state (fixed at 4 for AES)
   var Nb = 4; 
   // no of rounds: 10/12/14 for 128/192/256-bit keys
   var Nr = w.length/Nb - 1; 
 
-  // initialise 4xNb byte-array 'state' with input [ง3.4]
+  // initialise 4xNb byte-array 'state' with input [ยง3.4]
   var state = [[],[],[],[]];
   for (var i=0; i<4*Nb; i++) state[i%4][Math.floor(i/4)] = input[i];
 
@@ -402,7 +402,7 @@ q12.cipher = function(input, w) {
   state = q12.shiftRows(state, Nb);
   state = q12.addRoundKey(state, w, Nr, Nb);
 
-  // convert state to 1-d array before returning [ง3.4]
+  // convert state to 1-d array before returning [ยง3.4]
   var output = new Array(4*Nb);
   for (var i=0; i<4*Nb; i++) output[i] = state[i%4][Math.floor(i/4)];
   return output;
@@ -410,7 +410,7 @@ q12.cipher = function(input, w) {
 
 
 q12.subBytes = function(s, Nb) {
-  // apply SBox to state S [ง5.1.1]
+  // apply SBox to state S [ยง5.1.1]
   for (var r=0; r<4; r++) {
     for (var c=0; c<Nb; c++) s[r][c] = q12.sbox[s[r][c]];
   }
@@ -419,7 +419,7 @@ q12.subBytes = function(s, Nb) {
 
 
 q12.shiftRows = function(s, Nb) {
-  // shift row r of state S left by r bytes [ง5.1.2]
+  // shift row r of state S left by r bytes [ยง5.1.2]
   var t = new Array(4);
   for (var r=1; r<4; r++) {
     // shift into temp copy
@@ -434,17 +434,17 @@ q12.shiftRows = function(s, Nb) {
 
 
 q12.mixColumns = function(s, Nb) {
-  // combine bytes of each col of state S [ง5.1.3]
+  // combine bytes of each col of state S [ยง5.1.3]
   for (var c=0; c<4; c++) {
     var a = new Array(4);
     // 'a' is a copy of the current column from 's'
     var b = new Array(4);
-    // 'b' is a•{02} in GF(2^8)
+    // 'b' is aย•{02} in GF(2^8)
     for (var i=0; i<4; i++) {
       a[i] = s[i][c];
       b[i] = s[i][c]&0x80 ? s[i][c]<<1 ^ 0x011b : s[i][c]<<1;
     }
-    // a[n] ^ b[n] is a•{03} in GF(2^8)
+    // a[n] ^ b[n] is aย•{03} in GF(2^8)
     s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3]; // 2*a0 + 3*a1 + a2 + a3
     s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3]; // a0 * 2*a1 + 3*a2 + a3
     s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3]; // a0 + a1 + 2*a2 + 3*a3
@@ -455,7 +455,7 @@ q12.mixColumns = function(s, Nb) {
 
 
 q12.addRoundKey = function(state, w, rnd, Nb) {
-  // xor Round Key into state S [ง5.1.4]
+  // xor Round Key into state S [ยง5.1.4]
   for (var r=0; r<4; r++) {
     for (var c=0; c<Nb; c++) state[r][c] ^= w[rnd*4+c][r];
   }
@@ -464,7 +464,7 @@ q12.addRoundKey = function(state, w, rnd, Nb) {
 
 
 q12.keyExpansion = function(key) {
-  // generate Key Schedule (byte-array Nr+1 x Nb) from Key [ง5.2]
+  // generate Key Schedule (byte-array Nr+1 x Nb) from Key [ยง5.2]
   // block size (in words): no of columns in state (fixed at 4 for AES)
   var Nb = 4;
   // key length (in words): 4/6/8 for 128/192/256-bit keys
@@ -510,7 +510,7 @@ q12.rotWord = function(w) {
 
 
 // Sbox is pre-computed multiplicative inverse in GF(2^8) used in SubBytes and
-//  KeyExpansion [ง5.1.1]
+//  KeyExpansion [ยง5.1.1]
 q12.sbox = [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,
             0xd7,0xab,0x76,0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,
             0xa2,0xaf,0x9c,0xa4,0x72,0xc0,0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,
@@ -533,7 +533,7 @@ q12.sbox = [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,
             0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16];
 
 // Rcon is Round Constant used for the Key Expansion 
-// [1st col is 2^(r-1) in GF(2^8)] [ง5.2]
+// [1st col is 2^(r-1) in GF(2^8)] [ยง5.2]
 q12.rcon = [ [0x00, 0x00, 0x00, 0x00],
              [0x01, 0x00, 0x00, 0x00],
              [0x02, 0x00, 0x00, 0x00],
@@ -577,7 +577,7 @@ q12.aesEncryptCtr = function(plaintext, password, nBits) {
   // key is now 16/24/32 bytes long
   key = key.concat(key.slice(0, nBytes-16));
 
-  // initialise counter block (NIST SP800-38A งB.2): millisecond time-stamp for
+  // initialise counter block (NIST SP800-38A ยงB.2): millisecond time-stamp for
   // nonce in 1st 8 bytes,
   // block counter in 2nd 8 bytes
   // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
