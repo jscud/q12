@@ -132,7 +132,7 @@ q12.tree = function(t) {
     if (typeof(child) == 'string') {
       domNode.appendChild(document.createTextNode(child));
     } else {
-      // Buid recursively.
+      // Build recursively.
       domNode.appendChild(q12['tree'](child));
     }
   }
